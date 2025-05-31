@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Cancel Appointment - BookMyService{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-calendar-times me-2"></i>Cancel Appointment
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Are you sure you want to cancel this appointment?
+                </div>
+                
+                <div class="card mb-4 border-light">
+                    <div class="card-body">
+                        <h5 class="card-title">Appointment Details</h5>
+                        <div class="row mb-2">
+                            <div class="col-md-4 text-muted">Service:</div>
+                            <div class="col-md-8 fw-bold">{{ appointment.service.name }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-4 text-muted">Date:</div>
+                            <div class="col-md-8">{{ appointment.time_slot.date|date:"l, F d, Y" }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-4 text-muted">Time:</div>
+                            <div class="col-md-8">{{ appointment.time_slot.start_time|time:"g:i A" }} - {{ appointment.time_slot.end_time|time:"g:i A" }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-4 text-muted">Provider:</div>
+                            <div class="col-md-8">{{ appointment.employee.user.first_name }} {{ appointment.employee.user.last_name }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-4 text-muted">Status:</div>
+                            <div class="col-md-8">
+                                {% if appointment.status == 'PENDING' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% elif appointment.status == 'CONFIRMED' %}
+                                    <span class="badge bg-success">Confirmed</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if appointment.notes %}
+                        <div class="row mb-2">
+                            <div class="col-md-4 text-muted">Notes:</div>
+                            <div class="col-md-8">{{ appointment.notes }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'customer_dashboard' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-calendar-times me-2"></i>Confirm Cancellation
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

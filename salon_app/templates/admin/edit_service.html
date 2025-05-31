@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Service - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2 class="mb-4">
+                <i class="fas fa-edit me-2"></i>Edit Service
+            </h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'manage_services' %}">Services</a></li>
+                    <li class="breadcrumb-item active">Edit Service</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Editing: {{ service.name }}</h5>
+                    <span class="badge bg-primary">ID: {{ service.id }}</span>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="id_name" class="form-label">Service Name</label>
+                            {{ form.name.errors }}
+                            <input type="text" class="form-control {% if form.name.errors %}is-invalid{% endif %}" 
+                                id="id_name" name="name" value="{{ form.name.value }}" 
+                                placeholder="Enter service name" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_description" class="form-label">Description</label>
+                            {{ form.description.errors }}
+                            <textarea class="form-control {% if form.description.errors %}is-invalid{% endif %}" 
+                                id="id_description" name="description" rows="4" 
+                                placeholder="Enter service description">{{ form.description.value }}</textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="id_price" class="form-label">Price</label>
+                                    {{ form.price.errors }}
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" step="0.01" min="0" 
+                                            class="form-control {% if form.price.errors %}is-invalid{% endif %}" 
+                                            id="id_price" name="price" value="{{ form.price.value }}" 
+                                            placeholder="0.00" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="id_duration" class="form-label">Duration (minutes)</label>
+                                    {{ form.duration.errors }}
+                                    <input type="number" min="1" 
+                                        class="form-control {% if form.duration.errors %}is-invalid{% endif %}" 
+                                        id="id_duration" name="duration" value="{{ form.duration.value }}" 
+                                        placeholder="Enter duration in minutes" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'manage_services' %}" class="btn btn-outline-secondary me-md-2">
+                                <i class="fas fa-times me-1"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Update Service
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Service Details</h5>
+                    <p class="text-muted mb-0">Created: {{ service.created_at|date:"F d, Y" }}</p>
+                    <p class="text-muted">Last Updated: {{ service.updated_at|date:"F d, Y" }}</p>
+                    
+                    <hr>
+                    
+                    <h6>Service Statistics</h6>
+                    <div class="d-flex justify-content-between">
+                        <span>Active Employees:</span>
+                        <span class="badge bg-info">{{ service.employees.count }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mt-2">
+                        <span>Appointments:</span>
+                        <span class="badge bg-secondary">{{ service.appointment_set.count }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mt-2">
+                        <span>Revenue:</span>
+                        <span class="badge bg-success">${{ service.price }} per service</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm bg-light">
+                <div class="card-body">
+                    <h5 class="card-title">Editing Tips</h5>
+                    <p class="card-text">
+                        <small>
+                            When editing a service, consider the following:
+                        </small>
+                    </p>
+                    <ul class="small">
+                        <li>Changes to duration may affect scheduling</li>
+                        <li>Price changes will only affect new bookings</li>
+                        <li>Existing appointments will not be affected</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

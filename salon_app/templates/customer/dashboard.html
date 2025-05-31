@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - BookMyService{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2 class="mb-4">
+            <i class="fas fa-tachometer-alt me-2"></i>My Dashboard
+        </h2>
+        <div class="d-flex justify-content-end mb-3">
+            <a href="{% url 'available_slots' %}" class="btn btn-primary">
+                <i class="fas fa-calendar-plus me-2"></i>Book New Appointment
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Upcoming Appointments -->
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="mb-0">
+            <i class="fas fa-calendar me-2 text-primary"></i>Upcoming Appointments
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        {% if upcoming_appointments %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Service</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Provider</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appointment in upcoming_appointments %}
+                            <tr>
+                                <td>{{ appointment.service.name }}</td>
+                                <td>{{ appointment.time_slot.date|date:"M d, Y" }}</td>
+                                <td>{{ appointment.time_slot.start_time|time:"g:i A" }} - {{ appointment.time_slot.end_time|time:"g:i A" }}</td>
+                                <td>{{ appointment.employee.user.first_name }} {{ appointment.employee.user.last_name }}</td>
+                                <td>
+                                    {% if appointment.status == 'PENDING' %}
+                                        <span class="badge bg-warning">Pending</span>
+                                    {% elif appointment.status == 'CONFIRMED' %}
+                                        <span class="badge bg-success">Confirmed</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if appointment.status == 'PENDING' or appointment.status == 'CONFIRMED' %}
+                                        <a href="{% url 'cancel_appointment' appointment.id %}" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-times-circle"></i> Cancel
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center p-4">
+                <div class="text-muted mb-3">
+                    <i class="fas fa-calendar-times fa-3x"></i>
+                </div>
+                <p>You don't have any upcoming appointments.</p>
+                <a href="{% url 'available_slots' %}" class="btn btn-primary">
+                    Book an Appointment
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Past Appointments -->
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="mb-0">
+            <i class="fas fa-history me-2 text-secondary"></i>Past Appointments
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        {% if past_appointments %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Service</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Provider</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appointment in past_appointments %}
+                            <tr>
+                                <td>{{ appointment.service.name }}</td>
+                                <td>{{ appointment.time_slot.date|date:"M d, Y" }}</td>
+                                <td>{{ appointment.time_slot.start_time|time:"g:i A" }} - {{ appointment.time_slot.end_time|time:"g:i A" }}</td>
+                                <td>{{ appointment.employee.user.first_name }} {{ appointment.employee.user.last_name }}</td>
+                                <td>
+                                    {% if appointment.status == 'COMPLETED' %}
+                                        <span class="badge bg-info">Completed</span>
+                                    {% elif appointment.status == 'CANCELLED' %}
+                                        <span class="badge bg-danger">Cancelled</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Expired</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center p-4">
+                <div class="text-muted">
+                    <i class="fas fa-history fa-3x"></i>
+                </div>
+                <p>You don't have any past appointments.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,404 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign In - Haircare{% endblock %}
+
+{% block extra_css %}
+<style>
+    .login-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 0;
+    }
+    
+    .login-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        width: 100%;
+        max-width: 480px;
+    }
+    
+    .login-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        padding: 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .card-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+        transform: rotate(45deg);
+        animation: shimmer 3s infinite;
+    }
+    
+    .card-header h4 {
+        font-family: 'Playfair Display', serif;
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .card-header .subtitle {
+        font-size: 1rem;
+        opacity: 0.9;
+        margin-top: 0.5rem;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .card-body {
+        padding: 2.5rem;
+    }
+    
+    .form-floating {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-floating .form-control {
+        height: 60px;
+        padding: 1rem 3rem 1rem 1rem;
+        border: 2px solid #e9ecef;
+        border-radius: 15px;
+        background: rgba(248, 249, 250, 0.8);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-floating .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(212, 163, 115, 0.15);
+        background: white;
+        transform: translateY(-2px);
+    }
+    
+    .form-floating label {
+        padding: 1rem 1rem;
+        color: #6c757d;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .input-icon {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--primary-color);
+        font-size: 1.2rem;
+        z-index: 3;
+    }
+    
+    .password-toggle {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #6c757d;
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+        z-index: 4;
+    }
+    
+    .password-toggle:hover {
+        color: var(--primary-color);
+        background: rgba(212, 163, 115, 0.1);
+    }
+    
+    .btn-login {
+        width: 100%;
+        height: 60px;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        border: none;
+        border-radius: 15px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-login::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.5s;
+    }
+    
+    .btn-login:hover::before {
+        left: 100%;
+    }
+    
+    .btn-login:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(212, 163, 115, 0.3);
+    }
+    
+    .btn-login:active {
+        transform: translateY(-1px);
+    }
+    
+    .card-footer {
+        background: rgba(248, 249, 250, 0.5);
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 1.5rem 2.5rem;
+        text-align: center;
+    }
+    
+    .card-footer a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .card-footer a::after {
+        content: '';
+        position: absolute;
+        width: 0;
+        height: 2px;
+        bottom: -2px;
+        left: 50%;
+        background: var(--primary-color);
+        transition: all 0.3s ease;
+    }
+    
+    .card-footer a:hover::after {
+        width: 100%;
+        left: 0;
+    }
+    
+    .card-footer a:hover {
+        color: var(--primary-dark);
+        transform: translateY(-1px);
+    }
+    
+    .alert {
+        border-radius: 15px;
+        border: none;
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.5rem;
+        font-weight: 500;
+        animation: slideInDown 0.5s ease;
+    }
+    
+    .alert-danger {
+        background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+        color: white;
+        box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+    }
+    
+    .welcome-text {
+        text-align: center;
+        margin-bottom: 2rem;
+        color: #6c757d;
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
+    
+    .welcome-text i {
+        color: var(--primary-color);
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+    
+    @keyframes shimmer {
+        0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+        100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+    
+    @keyframes slideInDown {
+        from {
+            transform: translateY(-20px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .login-container {
+            padding: 1rem;
+        }
+        
+        .card-body {
+            padding: 2rem 1.5rem;
+        }
+        
+        .card-footer {
+            padding: 1.5rem;
+        }
+        
+        .card-header h4 {
+            font-size: 1.75rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-7 col-sm-9">
+                <div class="login-card" data-aos="zoom-in" data-aos-duration="800">
+                    <div class="card-header">
+                        <h4>Welcome Back</h4>
+                        <p class="subtitle">Sign in to your account</p>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="welcome-text">
+                            <i class="fas fa-user-circle"></i>
+                            Enter your credentials to access your dashboard
+                        </div>
+                        
+                        <form method="post" novalidate>
+                            {% csrf_token %}
+                            
+                            {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            
+                            <div class="form-floating">
+                                <input type="email" 
+                                       name="{{ form.username.name }}" 
+                                       id="{{ form.username.id_for_label }}" 
+                                       class="form-control {% if form.username.errors %}is-invalid{% endif %}" 
+                                       placeholder="Enter your email"
+                                       value="{{ form.username.value|default:'' }}"
+                                       required>
+                                <label for="{{ form.username.id_for_label }}">Email Address</label>
+                                <i class="fas fa-envelope input-icon"></i>
+                                {% if form.username.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.username.errors %}{{ error }}{% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-floating">
+                                <input type="password" 
+                                       name="{{ form.password.name }}" 
+                                       id="{{ form.password.id_for_label }}" 
+                                       class="form-control {% if form.password.errors %}is-invalid{% endif %}" 
+                                       placeholder="Enter your password"
+                                       required>
+                                <label for="{{ form.password.id_for_label }}">Password</label>
+                                <button type="button" class="password-toggle" onclick="togglePassword('{{ form.password.id_for_label }}')">
+                                    <i class="fas fa-eye" id="toggleIcon"></i>
+                                </button>
+                                {% if form.password.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.password.errors %}{{ error }}{% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="d-grid mt-4">
+                                <button type="submit" class="btn btn-login">
+                                    <i class="fas fa-sign-in-alt me-2"></i>
+                                    Sign In
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="card-footer">
+                        <p class="mb-0">
+                            Don't have an account? 
+                            <a href="{% url 'register' %}">Create one here</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePassword(fieldId) {
+    const passwordField = document.getElementById(fieldId);
+    const toggleIcon = document.getElementById('toggleIcon');
+    
+    if (passwordField.type === 'password') {
+        passwordField.type = 'text';
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-slash');
+    } else {
+        passwordField.type = 'password';
+        toggleIcon.classList.remove('fa-eye-slash');
+        toggleIcon.classList.add('fa-eye');
+    }
+}
+
+// Add form validation feedback
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const inputs = form.querySelectorAll('.form-control');
+    
+    inputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            if (this.value.trim() !== '') {
+                this.classList.add('filled');
+            } else {
+                this.classList.remove('filled');
+            }
+        });
+        
+        // Check if field has value on page load
+        if (input.value.trim() !== '') {
+            input.classList.add('filled');
+        }
+    });
+    
+    // Form submission animation
+    form.addEventListener('submit', function() {
+        const submitBtn = form.querySelector('.btn-login');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Signing In...';
+        submitBtn.disabled = true;
+    });
+});
+</script>
+{% endblock %}

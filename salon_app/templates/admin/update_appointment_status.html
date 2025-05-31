@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}Update Appointment Status - BookMyService{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="h3">Update Appointment Status</h1>
+    </div>
+    <div class="col-auto">
+        <a href="{% url 'manage_appointments' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Appointments
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Appointment #{{ appointment.id }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6>Appointment Details</h6>
+                        <p>
+                            <strong>Date:</strong> {{ appointment.time_slot.date|date:"F d, Y" }}<br>
+                            <strong>Time:</strong> {{ appointment.time_slot.start_time|time:"g:i A" }} - {{ appointment.time_slot.end_time|time:"g:i A" }}<br>
+                            <strong>Service:</strong> {{ appointment.service.name }}<br>
+                            <strong>Price:</strong> ${{ appointment.service.price }}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Customer Details</h6>
+                        <p>
+                            <strong>Name:</strong> {{ appointment.customer.first_name }} {{ appointment.customer.last_name }}<br>
+                            <strong>Email:</strong> {{ appointment.customer.email }}<br>
+                            <strong>Phone:</strong> {{ appointment.customer.phone|default:"N/A" }}
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <p class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Current Status: 
+                        <span class="badge bg-
+                            {% if appointment.status == 'PENDING' %}warning{% endif %}
+                            {% if appointment.status == 'CONFIRMED' %}primary{% endif %}
+                            {% if appointment.status == 'COMPLETED' %}success{% endif %}
+                            {% if appointment.status == 'CANCELLED' %}secondary{% endif %}
+                        ">
+                            {{ appointment.get_status_display }}
+                        </span>
+                    </p>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label for="status" class="form-label">Update Status</label>
+                        <select name="status" id="status" class="form-select">
+                            {% for status_code, status_name in status_choices %}
+                                <option value="{{ status_code }}" {% if appointment.status == status_code %}selected{% endif %}>{{ status_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="alert alert-warning status-warning" id="cancelledWarning" style="display: none;">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Changing the status to <strong>Cancelled</strong> will free up the time slot for other bookings.
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Update Status
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Status Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6><span class="badge bg-warning">Pending</span></h6>
+                    <p><small>Initial status when an appointment is created but not yet confirmed.</small></p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6><span class="badge bg-primary">Confirmed</span></h6>
+                    <p><small>The appointment has been confirmed and is scheduled to take place.</small></p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6><span class="badge bg-success">Completed</span></h6>
+                    <p><small>The service has been provided and the appointment is finished.</small></p>
+                </div>
+                
+                <div>
+                    <h6><span class="badge bg-secondary">Cancelled</span></h6>
+                    <p><small>The appointment has been cancelled and the time slot is available for other bookings.</small></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Notes</h5>
+            </div>
+            <div class="card-body">
+                {% if appointment.notes %}
+                    <p>{{ appointment.notes }}</p>
+                {% else %}
+                    <p class="text-muted"><small>No notes available for this appointment.</small></p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Show warning when 'CANCELLED' is selected
+        function updateWarnings() {
+            var selectedStatus = $('#status').val();
+            $('.status-warning').hide();
+            
+            if (selectedStatus === 'CANCELLED') {
+                $('#cancelledWarning').show();
+            }
+        }
+        
+        // Check on page load and when changed
+        updateWarnings();
+        $('#status').change(updateWarnings);
+    });
+</script>
+{% endblock %}

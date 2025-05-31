@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block title %}Book Appointment - BookMyService{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-calendar-plus me-2"></i>Book an Appointment
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.service.id_for_label }}" class="form-label">Service:</label>
+                        <select name="{{ form.service.name }}" id="{{ form.service.id_for_label }}" 
+                                class="form-select {% if form.service.errors %}is-invalid{% endif %}" required>
+                            <option value="" {% if not form.service.value %}selected{% endif %}>Select a service</option>
+                            {% for service in services %}
+                                <option value="{{ service.id }}" {% if form.service.value|stringformat:"s" == service.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ service.name }} ({{ service.duration }} min, ${{ service.price }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% if form.service.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.service.errors %}{{ error }}{% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.employee.id_for_label }}" class="form-label">Service Provider:</label>
+                        <select name="{{ form.employee.name }}" id="{{ form.employee.id_for_label }}" 
+                                class="form-select {% if form.employee.errors %}is-invalid{% endif %}" required>
+                            <option value="">Select a provider</option>
+                            {% if form.fields.employee.queryset %}
+                                {% for employee in form.fields.employee.queryset %}
+                                    <option value="{{ employee.id }}" {% if form.employee.value|stringformat:"s" == employee.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ employee.user.first_name }} {{ employee.user.last_name }}
+                                    </option>
+                                {% endfor %}
+                            {% endif %}
+                        </select>
+                        {% if form.employee.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.employee.errors %}{{ error }}{% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.time_slot.id_for_label }}" class="form-label">Time Slot:</label>
+                        <select name="{{ form.time_slot.name }}" id="{{ form.time_slot.id_for_label }}" 
+                                class="form-select {% if form.time_slot.errors %}is-invalid{% endif %}" required>
+                            <option value="">Select a time slot</option>
+                            {% if form.fields.time_slot.queryset %}
+                                {% for slot in form.fields.time_slot.queryset %}
+                                    <option value="{{ slot.id }}" {% if form.time_slot.value|stringformat:"s" == slot.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ slot.date|date:"M d, Y" }} ({{ slot.start_time|time:"g:i A" }} - {{ slot.end_time|time:"g:i A" }})
+                                    </option>
+                                {% endfor %}
+                            {% endif %}
+                        </select>
+                        {% if form.time_slot.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.time_slot.errors %}{{ error }}{% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.notes.id_for_label }}" class="form-label">Special Notes (Optional):</label>
+                        <textarea name="{{ form.notes.name }}" id="{{ form.notes.id_for_label }}" 
+                                  class="form-control {% if form.notes.errors %}is-invalid{% endif %}"
+                                  rows="3" placeholder="Any special requests or information the provider should know...">{{ form.notes.value|default:'' }}</textarea>
+                        {% if form.notes.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.notes.errors %}{{ error }}{% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-calendar-check me-2"></i>Confirm Booking
+                        </button>
+                        <a href="{% url 'available_slots' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Available Slots
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const serviceSelect = document.getElementById('{{ form.service.id_for_label }}');
+        const employeeSelect = document.getElementById('{{ form.employee.id_for_label }}');
+        const timeSlotSelect = document.getElementById('{{ form.time_slot.id_for_label }}');
+        
+        // Update employees when service changes
+        serviceSelect.addEventListener('change', function() {
+            const serviceId = this.value;
+            
+            if (serviceId) {
+                // Clear current options
+                employeeSelect.innerHTML = '<option value="">Loading providers...</option>';
+                timeSlotSelect.innerHTML = '<option value="">Select a time slot</option>';
+                
+                // Fetch employees for this service
+                fetch(`/api/employees/?service_id=${serviceId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        employeeSelect.innerHTML = '<option value="">Select a provider</option>';
+                        data.employees.forEach(employee => {
+                            let option = document.createElement('option');
+                            option.value = employee.id;
+                            option.textContent = `${employee.first_name} ${employee.last_name}`;
+                            employeeSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching employees:', error);
+                        employeeSelect.innerHTML = '<option value="">Error loading providers</option>';
+                    });
+            } else {
+                employeeSelect.innerHTML = '<option value="">Select a provider</option>';
+                timeSlotSelect.innerHTML = '<option value="">Select a time slot</option>';
+            }
+        });
+        
+        // Update time slots when employee changes
+        employeeSelect.addEventListener('change', function() {
+            const employeeId = this.value;
+            const serviceId = serviceSelect.value;
+            
+            if (employeeId && serviceId) {
+                // Clear current options
+                timeSlotSelect.innerHTML = '<option value="">Loading time slots...</option>';
+                
+                // Fetch time slots for this employee and service
+                fetch(`/api/time-slots/?employee_id=${employeeId}&service_id=${serviceId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        timeSlotSelect.innerHTML = '<option value="">Select a time slot</option>';
+                        data.time_slots.forEach(slot => {
+                            let option = document.createElement('option');
+                            option.value = slot.id;
+                            option.textContent = `${slot.date} (${slot.start_time} - ${slot.end_time})`;
+                            timeSlotSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching time slots:', error);
+                        timeSlotSelect.innerHTML = '<option value="">Error loading time slots</option>';
+                    });
+            } else {
+                timeSlotSelect.innerHTML = '<option value="">Select a time slot</option>';
+            }
+        });
+    });
+</script>
+{% endblock %}

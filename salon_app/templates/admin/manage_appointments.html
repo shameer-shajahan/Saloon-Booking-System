@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Appointments - BookMyService{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2>Manage Appointments</h2>
+    </div>
+</div>
+
+<!-- Filters Card -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Filters</h5>
+        <button class="btn btn-sm btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse" aria-expanded="true" aria-controls="filtersCollapse">
+            <i class="fas fa-filter"></i> Show/Hide
+        </button>
+    </div>
+    <div class="collapse show" id="filtersCollapse">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="status" class="form-label">Status</label>
+                    <select name="status" id="status" class="form-select">
+                        <option value="">All Statuses</option>
+                        {% for status_code, status_name in status_choices %}
+                            <option value="{{ status_code }}" {% if selected_status == status_code %}selected{% endif %}>{{ status_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="date_from" class="form-label">Date From</label>
+                    <input type="date" class="form-control" id="date_from" name="date_from" value="{{ date_from }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="date_to" class="form-label">Date To</label>
+                    <input type="date" class="form-control" id="date_to" name="date_to" value="{{ date_to }}">
+                </div>
+                <div class="col-12">
+                    <div class="d-flex justify-content-end">
+                        <a href="{% url 'manage_appointments' %}" class="btn btn-secondary me-2">Reset</a>
+                        <button type="submit" class="btn btn-primary">Apply Filters</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Appointments Table -->
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">Appointments List</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover table-striped mb-0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Date/Time</th>
+                    <th>Customer</th>
+                    <th>Service</th>
+                    <th>Employee</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if appointments %}
+                    {% for appointment in appointments %}
+                    <tr class="
+                        {% if appointment.status == 'PENDING' %}table-warning{% endif %}
+                        {% if appointment.status == 'CONFIRMED' %}table-info{% endif %}
+                        {% if appointment.status == 'COMPLETED' %}table-success{% endif %}
+                        {% if appointment.status == 'CANCELLED' %}table-secondary{% endif %}
+                    ">
+                        <td>{{ appointment.id }}</td>
+                        <td>
+                            <div>{{ appointment.time_slot.date|date:"D, M d, Y" }}</div>
+                            <small class="text-muted">{{ appointment.time_slot.start_time|time:"g:i A" }} - {{ appointment.time_slot.end_time|time:"g:i A" }}</small>
+                        </td>
+                        <td>
+                            <div>{{ appointment.customer.first_name }} {{ appointment.customer.last_name }}</div>
+                            <small class="text-muted">{{ appointment.customer.email }}</small>
+                        </td>
+                        <td>{{ appointment.service.name }}</td>
+                        <td>{{ appointment.employee.user.first_name }} {{ appointment.employee.user.last_name }}</td>
+                        <td>
+                            <span class="badge bg-
+                                {% if appointment.status == 'PENDING' %}warning{% endif %}
+                                {% if appointment.status == 'CONFIRMED' %}primary{% endif %}
+                                {% if appointment.status == 'COMPLETED' %}success{% endif %}
+                                {% if appointment.status == 'CANCELLED' %}secondary{% endif %}
+                            ">
+                                {{ appointment.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#appointmentDetailsModal{{ appointment.id }}" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <a href="{% url 'update_appointment_status' appointment.id %}" class="btn btn-outline-success" title="Update Status">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4">No appointments found matching your filters.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Appointment Details Modals -->
+{% if appointments %}
+    {% for appointment in appointments %}
+    <div class="modal fade" id="appointmentDetailsModal{{ appointment.id }}" tabindex="-1" aria-labelledby="appointmentDetailsModalLabel{{ appointment.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="appointmentDetailsModalLabel{{ appointment.id }}">Appointment Details #{{ appointment.id }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Customer Information</h6>
+                            <p>
+                                <strong>Name:</strong> {{ appointment.customer.first_name }} {{ appointment.customer.last_name }}<br>
+                                <strong>Email:</strong> {{ appointment.customer.email }}<br>
+                                <strong>Phone:</strong> {{ appointment.customer.phone|default:"N/A" }}
+                            </p>
+                            
+                            <h6>Service Details</h6>
+                            <p>
+                                <strong>Service:</strong> {{ appointment.service.name }}<br>
+                                <strong>Price:</strong> ${{ appointment.service.price }}<br>
+                                <strong>Duration:</strong> {{ appointment.service.duration }} minutes
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Appointment Information</h6>
+                            <p>
+                                <strong>Date:</strong> {{ appointment.time_slot.date|date:"F d, Y" }}<br>
+                                <strong>Time:</strong> {{ appointment.time_slot.start_time|time:"g:i A" }} - {{ appointment.time_slot.end_time|time:"g:i A" }}<br>
+                                <strong>Status:</strong> 
+                                <span class="badge bg-
+                                    {% if appointment.status == 'PENDING' %}warning{% endif %}
+                                    {% if appointment.status == 'CONFIRMED' %}primary{% endif %}
+                                    {% if appointment.status == 'COMPLETED' %}success{% endif %}
+                                    {% if appointment.status == 'CANCELLED' %}secondary{% endif %}
+                                ">
+                                    {{ appointment.get_status_display }}
+                                </span>
+                            </p>
+                            
+                            <h6>Employee</h6>
+                            <p>
+                                <strong>Name:</strong> {{ appointment.employee.user.first_name }} {{ appointment.employee.user.last_name }}<br>
+                                <strong>Email:</strong> {{ appointment.employee.user.email }}
+                            </p>
+                        </div>
+                    </div>
+                    {% if appointment.notes %}
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Notes:</h6>
+                            <p>{{ appointment.notes }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Timeline:</h6>
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    <i class="fas fa-calendar-plus text-success me-2"></i>
+                                    Created on {{ appointment.created_at|date:"F d, Y" }} at {{ appointment.created_at|time:"g:i A" }}
+                                </li>
+                                {% if appointment.updated_at != appointment.created_at %}
+                                <li class="list-group-item">
+                                    <i class="fas fa-edit text-primary me-2"></i>
+                                    Last updated on {{ appointment.updated_at|date:"F d, Y" }} at {{ appointment.updated_at|time:"g:i A" }}
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <a href="{% url 'update_appointment_status' appointment.id %}" class="btn btn-primary">Update Status</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips if needed
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Handle modal events for better UX
+    var modals = document.querySelectorAll('.modal');
+    modals.forEach(function(modal) {
+        modal.addEventListener('show.bs.modal', function(event) {
+            // Optional: Add any custom logic when modal opens
+            console.log('Modal opening:', event.target.id);
+        });
+        
+        modal.addEventListener('hidden.bs.modal', function(event) {
+            // Optional: Add any custom logic when modal closes
+            console.log('Modal closed:', event.target.id);
+        });
+    });
+
+    // Ensure collapse functionality works properly
+    var collapseElementList = [].slice.call(document.querySelectorAll('.collapse'));
+    var collapseList = collapseElementList.map(function(collapseEl) {
+        return new bootstrap.Collapse(collapseEl, {
+            toggle: false
+        });
+    });
+
+    // Handle table row clicks (optional enhancement)
+    var tableRows = document.querySelectorAll('tbody tr');
+    tableRows.forEach(function(row) {
+        row.addEventListener('click', function(event) {
+            // Only trigger if not clicking on buttons
+            if (!event.target.closest('button') && !event.target.closest('a')) {
+                var viewButton = row.querySelector('[data-bs-toggle="modal"]');
+                if (viewButton) {
+                    viewButton.click();
+                }
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

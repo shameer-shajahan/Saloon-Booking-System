@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Employee - BookMyService{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-user-plus me-2"></i>Add New Employee
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="first_name" class="form-label">First Name:</label>
+                            <input type="text" id="first_name" name="first_name" class="form-control" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="last_name" class="form-label">Last Name:</label>
+                            <input type="text" id="last_name" name="last_name" class="form-control" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address:</label>
+                        <input type="email" id="email" name="email" class="form-control" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Phone Number:</label>
+                        <input type="tel" id="phone" name="phone" class="form-control" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password:</label>
+                        <input type="password" id="password" name="password" class="form-control" required>
+                        <div class="form-text">
+                            Create a strong password for the employee's account.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="bio" class="form-label">Bio/Description:</label>
+                        <textarea id="bio" name="bio" class="form-control" rows="3"></textarea>
+                        <div class="form-text">
+                            Briefly describe this employee's experience and specialties.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Assign Services:</label>
+                        <div class="card">
+                            <div class="card-body">
+                                {% for service in services %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="services" 
+                                               value="{{ service.id }}" id="service_{{ service.id }}">
+                                        <label class="form-check-label" for="service_{{ service.id }}">
+                                            {{ service.name }} ({{ service.duration }} min, ${{ service.price }})
+                                        </label>
+                                    </div>
+                                {% empty %}
+                                    <p class="text-muted mb-0">No services available. <a href="{% url 'add_service' %}">Add services first</a>.</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'manage_employees' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-user-plus me-2"></i>Add Employee
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

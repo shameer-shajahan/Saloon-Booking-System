@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Employee - BookMyService{% endblock %}
+
+{% block extra_css %}
+<style>
+    .services-list {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-edit me-2"></i>Edit Employee
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="first_name" class="form-label">First Name*</label>
+                                <input type="text" class="form-control" id="first_name" name="first_name" value="{{ employee.user.first_name }}" required>
+                                <div class="invalid-feedback">
+                                    Please provide a first name.
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="last_name" class="form-label">Last Name*</label>
+                                <input type="text" class="form-control" id="last_name" name="last_name" value="{{ employee.user.last_name }}" required>
+                                <div class="invalid-feedback">
+                                    Please provide a last name.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">Email Address*</label>
+                                <input type="email" class="form-control" id="email" value="{{ employee.user.email }}" readonly>
+                                <small class="text-muted">Email cannot be changed</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" value="{{ employee.user.phone }}">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="bio" class="form-label">Bio/Description</label>
+                            <textarea class="form-control" id="bio" name="bio" rows="3">{{ employee.bio }}</textarea>
+                            <small class="text-muted">A brief description about the employee's expertise and experience</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Services Provided*</label>
+                            <div class="card">
+                                <div class="card-body services-list">
+                                    {% for service in services %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="services" value="{{ service.id }}" id="service{{ service.id }}"
+                                            {% if service in selected_services %}checked{% endif %}>
+                                        <label class="form-check-label" for="service{{ service.id }}">
+                                            {{ service.name }} - ${{ service.price }} ({{ service.duration }} mins)
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="invalid-feedback">
+                                Please select at least one service.
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">New Password</label>
+                            <input type="password" class="form-control" id="password" name="password">
+                            <small class="text-muted">Leave blank to keep current password</small>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{% url 'manage_employees' %}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-times me-1"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Form validation
+    (() => {
+        'use strict'
+        
+        // Fetch all forms we want to apply validation styles to
+        const forms = document.querySelectorAll('.needs-validation')
+        
+        // Loop over them and prevent submission
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })()
+</script>
+{% endblock %}

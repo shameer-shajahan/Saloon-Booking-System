@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - BookMyService{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2 class="mb-4">
+            <i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard
+        </h2>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card h-100 shadow-sm border-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Total Appointments</h6>
+                        <h3 class="mb-0">{{ stats.total_appointments }}</h3>
+                    </div>
+                    <div class="bg-light p-3 rounded">
+                        <i class="fas fa-calendar fa-2x text-primary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card h-100 shadow-sm border-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Pending Approvals</h6>
+                        <h3 class="mb-0">{{ stats.pending_appointments }}</h3>
+                    </div>
+                    <div class="bg-light p-3 rounded">
+                        <i class="fas fa-clock fa-2x text-warning"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card h-100 shadow-sm border-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Total Customers</h6>
+                        <h3 class="mb-0">{{ stats.total_customers }}</h3>
+                    </div>
+                    <div class="bg-light p-3 rounded">
+                        <i class="fas fa-users fa-2x text-success"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card h-100 shadow-sm border-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Total Staff</h6>
+                        <h3 class="mb-0">{{ stats.total_employees }}</h3>
+                    </div>
+                    <div class="bg-light p-3 rounded">
+                        <i class="fas fa-user-tie fa-2x text-info"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Links -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-link me-2 text-primary"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'add_employee' %}" class="card bg-light text-center p-3 text-decoration-none h-100">
+                            <div class="mb-2">
+                                <i class="fas fa-user-plus fa-2x text-primary"></i>
+                            </div>
+                            <h6 class="mb-0">Add Employee</h6>
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'add_service' %}" class="card bg-light text-center p-3 text-decoration-none h-100">
+                            <div class="mb-2">
+                                <i class="fas fa-concierge-bell fa-2x text-success"></i>
+                            </div>
+                            <h6 class="mb-0">Add Service</h6>
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'add_time_slot' %}" class="card bg-light text-center p-3 text-decoration-none h-100">
+                            <div class="mb-2">
+                                <i class="fas fa-clock fa-2x text-info"></i>
+                            </div>
+                            <h6 class="mb-0">Add Time Slot</h6>
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'manage_appointments' %}" class="card bg-light text-center p-3 text-decoration-none h-100">
+                            <div class="mb-2">
+                                <i class="fas fa-calendar-check fa-2x text-warning"></i>
+                            </div>
+                            <h6 class="mb-0">Manage Appointments</h6>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Today's Appointments -->
+<div class="card shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="fas fa-calendar-day me-2 text-primary"></i>Today's Appointments
+        </h5>
+        <a href="{% url 'manage_appointments' %}" class="btn btn-sm btn-outline-primary">
+            View All
+        </a>
+    </div>
+    <div class="card-body p-0">
+        {% if today_appointments %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Customer</th>
+                            <th>Service</th>
+                            <th>Time</th>
+                            <th>Provider</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appointment in today_appointments %}
+                            <tr>
+                                <td>{{ appointment.customer.first_name }} {{ appointment.customer.last_name }}</td>
+                                <td>{{ appointment.service.name }}</td>
+                                <td>{{ appointment.time_slot.start_time|time:"g:i A" }} - {{ appointment.time_slot.end_time|time:"g:i A" }}</td>
+                                <td>{{ appointment.employee.user.first_name }} {{ appointment.employee.user.last_name }}</td>
+                                <td>
+                                    {% if appointment.status == 'PENDING' %}
+                                        <span class="badge bg-warning">Pending</span>
+                                    {% elif appointment.status == 'CONFIRMED' %}
+                                        <span class="badge bg-success">Confirmed</span>
+                                    {% elif appointment.status == 'COMPLETED' %}
+                                        <span class="badge bg-info">Completed</span>
+                                    {% elif appointment.status == 'CANCELLED' %}
+                                        <span class="badge bg-danger">Cancelled</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'update_appointment_status' appointment.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center p-4">
+                <div class="text-muted mb-3">
+                    <i class="fas fa-calendar-times fa-3x"></i>
+                </div>
+                <p>No appointments scheduled for today.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
