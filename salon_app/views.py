@@ -500,3 +500,5 @@ class FeedbacksView(ListView):
     template_name="admin/feedbacks.html"
     model=Feedbacks
     context_object_name="feedbacks"  
+
+
