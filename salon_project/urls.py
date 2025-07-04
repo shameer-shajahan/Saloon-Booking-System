@@ -27,7 +27,7 @@ urlpatterns = [
     path('', views.index, name='index'),
 
 
-        # Admin URLs
+    # Admin URLs
     path('copy@IHRD_PROJECT/dashboard/', views.admin_dashboard, name='admin_dashboard'),
 
         # Employee management

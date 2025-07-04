@@ -124,6 +124,7 @@ def available_slots(request):
         if employee_key not in grouped_slots[date_str]:
             grouped_slots[date_str][employee_key] = {
                 'name': employee_name,
+                'employee': slot.employee,  # Add the employee object
                 'slots': []
             }
         
@@ -133,9 +134,19 @@ def available_slots(request):
             'end_time': slot.end_time.strftime('%H:%M')
         })
     
-    # For AJAX requests, still return JSON
+    # For AJAX requests, return JSON (but employee objects can't be serialized directly)
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        return JsonResponse({'slots': grouped_slots})
+        # Create a serializable version for JSON response
+        json_slots = {}
+        for date_str, employees in grouped_slots.items():
+            json_slots[date_str] = {}
+            for emp_id, emp_data in employees.items():
+                json_slots[date_str][emp_id] = {
+                    'name': emp_data['name'],
+                    'bio': emp_data['employee'].bio if emp_data['employee'].bio else '',
+                    'slots': emp_data['slots']
+                }
+        return JsonResponse({'slots': json_slots})
     
     # Get services for filtering
     services = Service.objects.all()
@@ -385,9 +396,26 @@ def edit_service(request, service_id):
 def manage_time_slots(request):
     employees = Employee.objects.all()
     
+    # Get all available time slots (assuming you have a TimeSlot model)
+    time_slots = TimeSlot.objects.filter(is_available=True).order_by('date', 'start_time')
+    
     return render(request, 'admin/manage_time_slots.html', {
-        'employees': employees
+        'employees': employees,
+        'time_slots': time_slots
     })
+
+@login_required
+@user_passes_test(is_admin)
+def delete_time_slot(request, pk):
+    time_slot = get_object_or_404(TimeSlot, pk=pk)
+    
+    
+    if request.method == 'POST':
+        time_slot.delete()
+        messages.success(request, "Time slot deleted successfully.")
+        return redirect('manage_time_slots')  # Adjust redirect as needed
+    
+    return redirect('manage_time_slots')  # Redirect if not POST
 
 @login_required
 @user_passes_test(is_admin)

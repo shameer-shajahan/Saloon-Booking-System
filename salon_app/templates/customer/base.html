@@ -43,6 +43,9 @@
                                 <a class="nav-link" href="{% url 'manage_appointments' %}">Appointments</a>
                             </li>
                             <li class="nav-item">
+                                <a class="nav-link" href="{% url 'admin_available_slots' %}">Available Appointments</a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link" href="{% url 'manage_appointments' %}">Feedback</a>
                             </li>
                         {% elif user.user_type == 'CUSTOMER' %}

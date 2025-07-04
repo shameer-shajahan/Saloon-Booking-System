@@ -29,14 +29,14 @@ urlpatterns = [
     # Time slot management
     path('admin/time-slots/', views.manage_time_slots, name='manage_time_slots'),
     path('admin/time-slots/add/', views.add_time_slot, name='add_time_slot'),
+    path('timeslot/delete/<int:pk>/', views.delete_time_slot, name='delete_time_slot'),
     
     # Appointment management
     path('admin/appointments/', views.manage_appointments, name='manage_appointments'),
     path('admin/appointments/update-status/<int:appointment_id>/', views.update_appointment_status, name='update_appointment_status'),
 
-# feedbacl urls 
+    # feedbacl urls 
     path("feedbacks/",views.FeedbacksView.as_view(),name="feedbacks"),
     path("feedback/add/",views.AddfeedbackView.as_view(),name="feedback-add"),
-
 
 ]

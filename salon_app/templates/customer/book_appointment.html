@@ -23,14 +23,22 @@
                     </div>
                     {% endif %}
                     
-                    <div class="mb-3">
-                        <label for="{{ form.service.id_for_label }}" class="form-label">Service:</label>
-                        <select name="{{ form.service.name }}" id="{{ form.service.id_for_label }}" 
-                                class="form-select {% if form.service.errors %}is-invalid{% endif %}" required>
-                            <option value="" {% if not form.service.value %}selected{% endif %}>Select a service</option>
-                            {% for service in services %}
-                                <option value="{{ service.id }}" {% if form.service.value|stringformat:"s" == service.id|stringformat:"s" %}selected{% endif %}>
-                                    {{ service.name }} ({{ service.duration }} min, ${{ service.price }})
+                    <!-- Service Selection -->
+                    <div class="mb-4">
+                        <label for="{{ form.service.id_for_label }}" class="form-label fw-semibold">
+                            <i class="fas fa-cog me-2 text-primary"></i>Service *
+                        </label>
+                        <select class="form-select form-select-lg {% if form.service.errors %}is-invalid{% endif %}" 
+                                id="{{ form.service.id_for_label }}" 
+                                name="{{ form.service.name }}" 
+                                required>
+                            <option value="">Choose a service...</option>
+                            {% for service in form.service.field.queryset %}
+                                <option value="{{ service.id }}" 
+                                        {% if form.service.value == service.id|stringformat:"s" %}selected{% endif %}
+                                        data-duration="{{ service.duration_minutes }}"
+                                        data-price="{{ service.price }}">
+                                    {{ service.name }} - {{ service.duration }} min - ${{ service.price }}
                                 </option>
                             {% endfor %}
                         </select>
@@ -39,53 +47,76 @@
                             {% for error in form.service.errors %}{{ error }}{% endfor %}
                         </div>
                         {% endif %}
+                        <div class="form-text text-muted">
+                            <small><i class="fas fa-info-circle me-1"></i>Select a service to see duration and pricing details</small>
+                        </div>
                     </div>
                     
-                    <div class="mb-3">
-                        <label for="{{ form.employee.id_for_label }}" class="form-label">Service Provider:</label>
-                        <select name="{{ form.employee.name }}" id="{{ form.employee.id_for_label }}" 
-                                class="form-select {% if form.employee.errors %}is-invalid{% endif %}" required>
-                            <option value="">Select a provider</option>
-                            {% if form.fields.employee.queryset %}
-                                {% for employee in form.fields.employee.queryset %}
-                                    <option value="{{ employee.id }}" {% if form.employee.value|stringformat:"s" == employee.id|stringformat:"s" %}selected{% endif %}>
-                                        {{ employee.user.first_name }} {{ employee.user.last_name }}
-                                    </option>
-                                {% endfor %}
-                            {% endif %}
+                    <!-- Employee Selection -->
+                    <div class="mb-4">
+                        <label for="{{ form.employee.id_for_label }}" class="form-label fw-semibold">
+                            <i class="fas fa-user-tie me-2 text-primary"></i>Service Provider *
+                        </label>
+                        <select class="form-select form-select-lg {% if form.employee.errors %}is-invalid{% endif %}" 
+                                id="{{ form.employee.id_for_label }}" 
+                                name="{{ form.employee.name }}" 
+                                required>
+                            <option value="">Select a service provider...</option>
+                            {% for employee in form.employee.field.queryset %}
+                                <option value="{{ employee.id }}" 
+                                        {% if form.employee.value == employee.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ employee }} - {{ employee.bio }}
+                                </option>
+                            {% endfor %}
                         </select>
                         {% if form.employee.errors %}
                         <div class="invalid-feedback">
                             {% for error in form.employee.errors %}{{ error }}{% endfor %}
                         </div>
                         {% endif %}
+                        <div class="form-text text-muted">
+                            <small><i class="fas fa-info-circle me-1"></i>Choose your preferred service provider</small>
+                        </div>
                     </div>
                     
-                    <div class="mb-3">
-                        <label for="{{ form.time_slot.id_for_label }}" class="form-label">Time Slot:</label>
-                        <select name="{{ form.time_slot.name }}" id="{{ form.time_slot.id_for_label }}" 
-                                class="form-select {% if form.time_slot.errors %}is-invalid{% endif %}" required>
-                            <option value="">Select a time slot</option>
-                            {% if form.fields.time_slot.queryset %}
-                                {% for slot in form.fields.time_slot.queryset %}
-                                    <option value="{{ slot.id }}" {% if form.time_slot.value|stringformat:"s" == slot.id|stringformat:"s" %}selected{% endif %}>
-                                        {{ slot.date|date:"M d, Y" }} ({{ slot.start_time|time:"g:i A" }} - {{ slot.end_time|time:"g:i A" }})
-                                    </option>
-                                {% endfor %}
-                            {% endif %}
+                    <!-- Time Slot Selection -->
+                    <div class="mb-4">
+                        <label for="{{ form.time_slot.id_for_label }}" class="form-label fw-semibold">
+                            <i class="fas fa-clock me-2 text-primary"></i>Time Slot *
+                        </label>
+                        <select class="form-select form-select-lg {% if form.time_slot.errors %}is-invalid{% endif %}" 
+                                id="{{ form.time_slot.id_for_label }}" 
+                                name="{{ form.time_slot.name }}" 
+                                required>
+                            <option value="">Choose your preferred time...</option>
+                            {% for slot in form.time_slot.field.queryset %}
+                                <option value="{{ slot.id }}" 
+                                        {% if form.time_slot.value == slot.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ slot.date|date:"M d, Y" }} - {{ slot.start_time|time:"g:i A" }} to {{ slot.end_time|time:"g:i A" }}
+                                </option>
+                            {% endfor %}
                         </select>
                         {% if form.time_slot.errors %}
                         <div class="invalid-feedback">
                             {% for error in form.time_slot.errors %}{{ error }}{% endfor %}
                         </div>
                         {% endif %}
+                        <div class="form-text text-muted">
+                            <small><i class="fas fa-info-circle me-1"></i>All times shown are available for booking</small>
+                        </div>
                     </div>
                     
-                    <div class="mb-3">
-                        <label for="{{ form.notes.id_for_label }}" class="form-label">Special Notes (Optional):</label>
-                        <textarea name="{{ form.notes.name }}" id="{{ form.notes.id_for_label }}" 
-                                  class="form-control {% if form.notes.errors %}is-invalid{% endif %}"
-                                  rows="3" placeholder="Any special requests or information the provider should know...">{{ form.notes.value|default:'' }}</textarea>
+                    <!-- Notes Field -->
+                    <div class="mb-4">
+                        <label for="{{ form.notes.id_for_label }}" class="form-label fw-semibold">
+                            <i class="fas fa-sticky-note me-2 text-primary"></i>Special Notes
+                            <small class="text-muted">(Optional)</small>
+                        </label>
+                        <textarea class="form-control {% if form.notes.errors %}is-invalid{% endif %}" 
+                                  id="{{ form.notes.id_for_label }}" 
+                                  name="{{ form.notes.name }}" 
+                                  rows="3" 
+                                  placeholder="Any special requirements or additional information...">{{ form.notes.value|default_if_none:'' }}</textarea>
                         {% if form.notes.errors %}
                         <div class="invalid-feedback">
                             {% for error in form.notes.errors %}{{ error }}{% endfor %}
@@ -93,11 +124,12 @@
                         {% endif %}
                     </div>
                     
+                    <!-- Action Buttons -->
                     <div class="d-grid gap-2 mt-4">
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-primary btn-lg">
                             <i class="fas fa-calendar-check me-2"></i>Confirm Booking
                         </button>
-                        <a href="{% url 'available_slots' %}" class="btn btn-outline-secondary">
+                        <a href="{% url 'available_slots' %}" class="btn btn-outline-secondary btn-lg">
                             <i class="fas fa-arrow-left me-2"></i>Back to Available Slots
                         </a>
                     </div>
@@ -110,71 +142,59 @@
 
 {% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const serviceSelect = document.getElementById('{{ form.service.id_for_label }}');
-        const employeeSelect = document.getElementById('{{ form.employee.id_for_label }}');
-        const timeSlotSelect = document.getElementById('{{ form.time_slot.id_for_label }}');
-        
-        // Update employees when service changes
-        serviceSelect.addEventListener('change', function() {
-            const serviceId = this.value;
-            
-            if (serviceId) {
-                // Clear current options
-                employeeSelect.innerHTML = '<option value="">Loading providers...</option>';
-                timeSlotSelect.innerHTML = '<option value="">Select a time slot</option>';
-                
-                // Fetch employees for this service
-                fetch(`/api/employees/?service_id=${serviceId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        employeeSelect.innerHTML = '<option value="">Select a provider</option>';
-                        data.employees.forEach(employee => {
-                            let option = document.createElement('option');
-                            option.value = employee.id;
-                            option.textContent = `${employee.first_name} ${employee.last_name}`;
-                            employeeSelect.appendChild(option);
-                        });
-                    })
-                    .catch(error => {
-                        console.error('Error fetching employees:', error);
-                        employeeSelect.innerHTML = '<option value="">Error loading providers</option>';
-                    });
-            } else {
-                employeeSelect.innerHTML = '<option value="">Select a provider</option>';
-                timeSlotSelect.innerHTML = '<option value="">Select a time slot</option>';
-            }
+document.addEventListener('DOMContentLoaded', function() {
+    // Add focus effects to form fields
+    const formFields = document.querySelectorAll('.form-select, .form-control');
+    formFields.forEach(field => {
+        field.addEventListener('focus', function() {
+            this.parentElement.querySelector('.form-label').classList.add('text-primary');
         });
         
-        // Update time slots when employee changes
-        employeeSelect.addEventListener('change', function() {
-            const employeeId = this.value;
-            const serviceId = serviceSelect.value;
-            
-            if (employeeId && serviceId) {
-                // Clear current options
-                timeSlotSelect.innerHTML = '<option value="">Loading time slots...</option>';
-                
-                // Fetch time slots for this employee and service
-                fetch(`/api/time-slots/?employee_id=${employeeId}&service_id=${serviceId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        timeSlotSelect.innerHTML = '<option value="">Select a time slot</option>';
-                        data.time_slots.forEach(slot => {
-                            let option = document.createElement('option');
-                            option.value = slot.id;
-                            option.textContent = `${slot.date} (${slot.start_time} - ${slot.end_time})`;
-                            timeSlotSelect.appendChild(option);
-                        });
-                    })
-                    .catch(error => {
-                        console.error('Error fetching time slots:', error);
-                        timeSlotSelect.innerHTML = '<option value="">Error loading time slots</option>';
-                    });
-            } else {
-                timeSlotSelect.innerHTML = '<option value="">Select a time slot</option>';
-            }
+        field.addEventListener('blur', function() {
+            this.parentElement.querySelector('.form-label').classList.remove('text-primary');
         });
     });
+    
+    // Service selection handler with price display
+    const serviceSelect = document.getElementById('{{ form.service.id_for_label }}');
+    if (serviceSelect) {
+        serviceSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption.value) {
+                const duration = selectedOption.dataset.duration;
+                const price = selectedOption.dataset.price;
+                
+                // You can add a price display element here if needed
+                console.log(`Selected: ${selectedOption.text}, Duration: ${duration} min, Price: ${price}`);
+            }
+        });
+    }
+    
+    // Form validation feedback
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const requiredFields = form.querySelectorAll('[required]');
+        let isValid = true;
+        
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+        
+        if (!isValid) {
+            e.preventDefault();
+            // Scroll to first invalid field
+            const firstInvalid = form.querySelector('.is-invalid');
+            if (firstInvalid) {
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstInvalid.focus();
+            }
+        }
+    });
+});
 </script>
 {% endblock %}

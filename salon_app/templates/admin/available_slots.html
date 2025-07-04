@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin - Available Slots{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Available Slots Management</h1>
+    
+    <!-- Filter Form -->
+    <div class="filter-section">
+        <form method="GET" id="filter-form">
+            <div class="form-group">
+                <label for="date">Date:</label>
+                <input type="date" id="date" name="date" value="{{ request.GET.date }}">
+            </div>
+            
+            <div class="form-group">
+                <label for="service_id">Service:</label>
+                <select id="service_id" name="service_id">
+                    <option value="">All Services</option>
+                    {% for service in services %}
+                        <option value="{{ service.id }}" {% if request.GET.service_id == service.id|stringformat:"s" %}selected{% endif %}>
+                            {{ service.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <button type="submit">Filter Slots</button>
+            <button type="button" id="clear-filters">Clear Filters</button>
+        </form>
+    </div>
+    
+    <!-- Slots Display -->
+    <div class="slots-container" id="slots-container">
+        {% if slots %}
+            {% for date, employees in slots.items %}
+                <div class="date-section">
+                    <h2>{{ date }}</h2>
+                    
+                    {% for employee_id, employee_data in employees.items %}
+                        <div class="employee-section">
+                            <h3>{{ employee_data.name }}</h3>
+                            {% if employee_data.bio %}
+                                <p class="employee-bio">{{ employee_data.bio }}</p>
+                            {% endif %}
+                            
+                            <div class="time-slots">
+                                {% for slot in employee_data.slots %}
+                                    <div class="slot-item" data-slot-id="{{ slot.id }}">
+                                        <span class="slot-time">{{ slot.start_time }} - {{ slot.end_time }}</span>
+                                        <button class="slot-action" onclick="toggleSlot({{ slot.id }})">
+                                            Disable
+                                        </button>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-slots">
+                <p>No available slots found for the selected criteria.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('filter-form');
+    const clearFiltersBtn = document.getElementById('clear-filters');
+    const slotsContainer = document.getElementById('slots-container');
+    
+    // Auto-submit form when filters change
+    filterForm.addEventListener('change', function() {
+        loadSlots();
+    });
+    
+    // Clear filters
+    clearFiltersBtn.addEventListener('click', function() {
+        document.getElementById('date').value = '';
+        document.getElementById('service_id').value = '';
+        loadSlots();
+    });
+    
+    // Load slots via AJAX
+    function loadSlots() {
+        const formData = new FormData(filterForm);
+        const params = new URLSearchParams(formData);
+        
+        fetch(`${window.location.pathname}?${params}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            updateSlotsDisplay(data.slots);
+        })
+        .catch(error => {
+            console.error('Error loading slots:', error);
+        });
+    }
+    
+    // Update slots display
+    function updateSlotsDisplay(slots) {
+        let html = '';
+        
+        if (Object.keys(slots).length === 0) {
+            html = '<div class="no-slots"><p>No available slots found for the selected criteria.</p></div>';
+        } else {
+            for (const [date, employees] of Object.entries(slots)) {
+                html += `<div class="date-section"><h2>${date}</h2>`;
+                
+                for (const [empId, empData] of Object.entries(employees)) {
+                    html += `<div class="employee-section">
+                        <h3>${empData.name}</h3>`;
+                    
+                    if (empData.bio) {
+                        html += `<p class="employee-bio">${empData.bio}</p>`;
+                    }
+                    
+                    html += `<div class="time-slots">`;
+                    
+                    empData.slots.forEach(slot => {
+                        html += `<div class="slot-item" data-slot-id="${slot.id}">
+                            <span class="slot-time">${slot.start_time} - ${slot.end_time}</span>
+                            <button class="slot-action" onclick="toggleSlot(${slot.id})">
+                                Disable
+                            </button>
+                        </div>`;
+                    });
+                    
+                    html += `</div></div>`;
+                }
+                
+                html += `</div>`;
+            }
+        }
+        
+        slotsContainer.innerHTML = html;
+    }
+});
+
+// Toggle slot availability
+function toggleSlot(slotId) {
+    if (confirm('Are you sure you want to disable this slot?')) {
+        // Add your slot toggle logic here
+        fetch(`/admin/toggle-slot/${slotId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Remove the slot from display or update its status
+                const slotElement = document.querySelector(`[data-slot-id="${slotId}"]`);
+                slotElement.style.opacity = '0.5';
+                slotElement.querySelector('.slot-action').textContent = 'Disabled';
+                slotElement.querySelector('.slot-action').disabled = true;
+            } else {
+                alert('Error disabling slot');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error disabling slot');
+        });
+    }
+}
+</script>
+{% endblock %}
